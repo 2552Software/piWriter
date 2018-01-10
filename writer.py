@@ -1,11 +1,10 @@
-import io
-import os
-import time
-import picamera
-import cv2
+iimport io 
+import os 
+import time 
+import picamera 
+import cv2 
 import numpy as np
-import gzip
-from array import array
+from array import array 
 from time import sleep
 
 import serial
@@ -29,26 +28,16 @@ with picamera.PiCamera() as camera:
         image = np.empty((240*320*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
         image = image.reshape((240, 320, 3))
-        # Construct a numpy array from the stream
-        #data = np.fromstring(stream.getvalue(), dtype=np.uint8)
-        # "Decode" the image from the array, preserving colour
-        #image = cv2.imdecode(data, 1)
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
-        data2  = array('B')
-        file = open('img.jpg', 'rb') 
-        statinfo = os.stat('img.jpg')
-        print('data size %d' %  statinfo.st_size)
-        data2.read(file, statinfo.st_size)
-        i = 1
-        for x in np.nditer(data2):
-                print i, hex(x)
-                i = i + 1
-                ser.write(chr(x))
-                if ((i % 500) == 0):
-                        sleep(0.15)
-
-        #image2 = cv2.imread('img_CV2_90.jpg', cv2.IMREAD_GRAYSCALE )
-        print gray_image.size
-
-#cv2.imshow('image',image)
+        with open('img.jpg', 'rb') as f:
+          byte = f.read(1)
+          i = 0
+          while byte:
+            bts = bytes(byte)
+            i = i + 1
+            print('send  %d' % i)
+            ser.write(byte)
+            byte = f.read(1)
+        print('sent')
+        ser.read()
