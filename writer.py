@@ -11,6 +11,9 @@ import serial
 from queue import Queue
 from threading import Thread
 
+ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
+print(ser.name)         # check which port was really used
+
 def send(filename):
   statinfo = os.stat(filename)
   print('send %s, size %d' % (filename, statinfo.st_size))
@@ -48,9 +51,6 @@ def sender(i, q):
 #To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
 #To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
 #Optionally, set iso to a fixed value.
-
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
-print(ser.name)         # check which port was really used
 
 with picamera.PiCamera() as camera:
     #camera.start_preview()
