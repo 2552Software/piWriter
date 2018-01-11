@@ -85,6 +85,7 @@ with picamera.PiCamera() as camera:
         #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         #gray_image = image
         filename = "img" + str(i) + ".jpg"
+        i = i + 1
         print('create %s' % filename)
         cv2.imwrite(filename,image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
         Q.put(filename)
