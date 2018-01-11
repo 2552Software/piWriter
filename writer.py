@@ -1,4 +1,4 @@
-iimport io 
+import io 
 import os 
 import time 
 import picamera 
@@ -17,17 +17,28 @@ import serial
 ser = serial.Serial('/dev/ttyUSB0', 115200)  # open serial port
 print(ser.name)         # check which port was really used
 
-# Create the in-memory stream
-stream = io.BytesIO()
 with picamera.PiCamera() as camera:
     #camera.start_preview()
-    camera.resolution = (320, 240)
-    camera.framerate = 24
+    x = 320
+    y = 240
+    camera.resolution = (x, y)
     time.sleep(2)
+
     while True:
-        image = np.empty((240*320*3,), dtype=np.uint8)
+        inputdata = ser.read() 
+        print("new data %s" % inputdata)
+        if (inputdata == 'h') :
+          print('hi-res')
+          x = 640
+          y = 240
+          camera.resolution = (x,y)
+        if (inputdata == 's'):
+          print('sport mode')
+        if (inputdata == 'i'):
+          print('iso low')
+        image = np.empty((x*y*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
-        image = image.reshape((240, 320, 3))
+        image = image.reshape((x, y, 3))
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
         with open('img.jpg', 'rb') as f:
@@ -40,4 +51,5 @@ with picamera.PiCamera() as camera:
             ser.write(byte)
             byte = f.read(1)
         print('sent')
-        ser.read()
+
+
