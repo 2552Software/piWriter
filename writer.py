@@ -39,12 +39,10 @@ def sender(q):
     """
     while True:
         filename = q.get()
-        print ('%s: sending' %  filename)
-        send(filename)
-        # instead of really downloading the URL,
-        # we just pretend and sleep
-        time.sleep( 2)
-        q.task_done()
+        if (len(filename) > 0):
+          print ('%s: sending' %  filename)
+          send(filename)
+          q.task_done()
 
 #To fix exposure time, set the shutter_speed attribute to a reasonable value.
 #To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
@@ -85,5 +83,5 @@ with picamera.PiCamera() as camera:
         #encimg = cv2.imencode('.jpg', img, encode_param)
         #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray_image = image
-        cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
+        cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
         Q.put(filename)
