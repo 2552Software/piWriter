@@ -74,6 +74,7 @@ with picamera.PiCamera() as camera:
     worker.start()
     time.sleep(5)
     print('cam signed on')
+    i = 1
     while True:
         print('capture')
         image = np.empty((x*y*3,), dtype=np.uint8)
@@ -82,6 +83,8 @@ with picamera.PiCamera() as camera:
         #maybe for inmemory some day? encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
         #encimg = cv2.imencode('.jpg', img, encode_param)
         #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray_image = image
-        cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+        #gray_image = image
+        filename = "img" + str(i) + ".jpg"
+        print('create %s' % filename)
+        cv2.imwrite(filename,image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
         Q.put(filename)
