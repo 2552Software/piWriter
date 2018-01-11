@@ -21,14 +21,15 @@ def send(filename):
   with open(filename, 'rb') as f:
           byte = f.read(1)
           i = 0
+          print('reading from %s' % filename)
           while byte:
             i = i + 1
-            #print('send  %d %s' % (i, byte))
+            #print('send %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
-            if ((i % 64) == 0):
-              sleep(.03)
+            if ((i % 512) == 0):
+              sleep(.2)
   x = ser.read()  
   t1 = time.time()       
   print('%s sent, x = %s time is %d' % (filename, x, t1-t0))
@@ -66,13 +67,14 @@ with picamera.PiCamera() as camera:
     #camera.framerate=24
     # speed in in micro seconds, 6000000us, 6000ms, 6s
     #camera.exposure_speed = 100
-    #camera.shutter_speed = camera.exposure_speed
+    #camera.shuttle_speed = camera.exposure_speed
     #sign on, let cam start
     Q = Queue()
     for i in range(1):
       worker = Thread(target=sender, args=(i, Q,))
       worker.setDaemon(True)
       worker.start()
+    time.sleep(5)
     print('cam signed on')
     i = 1
     while True:
@@ -82,10 +84,18 @@ with picamera.PiCamera() as camera:
         image = image.reshape((y, x, 3))
         #maybe for inmemory some day? encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
         #encimg = cv2.imencode('.jpg', img, encode_param)
-        #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         #gray_image = image
         filename = "img" + str(i) + ".jpg"
         i = i + 1
         print('create %s' % filename)
-        cv2.imwrite(filename,image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+        cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
         Q.put(filename)
+        if (i > 60):
+         break
+        time.sleep(1)
+
+print('wait for q')
+Q.join()
+print('all done!')
+
