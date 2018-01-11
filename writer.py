@@ -69,7 +69,7 @@ with picamera.PiCamera() as camera:
     #camera.shutter_speed = camera.exposure_speed
     #sign on, let cam start
     Q = Queue()
-    worker = Thread(target=downloadEnclosures, args=(q))
+    worker = Thread(target=sender, args=(Q))
     worker.setDaemon(True)
     worker.start()
     time.sleep(5)
