@@ -8,7 +8,7 @@ import numpy as np
 from array import array 
 from time import sleep
 import serial
-import queue
+from queue import Queue
 from threading import Thread
 
 def send(filename):
