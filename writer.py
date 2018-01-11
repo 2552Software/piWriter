@@ -30,7 +30,7 @@ def send(filename):
   t1 = time.time()       
   print('%s sent, x = %s time is %d' % (filename, x, t1-t0))
 
-def sender(q):
+def sender(i, q):
     """This is the worker thread function.
     It processes items in the queue one after
     another.  These daemon threads go into an
@@ -69,10 +69,10 @@ with picamera.PiCamera() as camera:
     #camera.shutter_speed = camera.exposure_speed
     #sign on, let cam start
     Q = Queue()
-    worker = Thread(target=sender, args=(Q))
-    worker.setDaemon(True)
-    worker.start()
-    time.sleep(5)
+    for i in range(1):
+      worker = Thread(target=sender, args=(i, Q,))
+      worker.setDaemon(True)
+      worker.start()
     print('cam signed on')
     i = 1
     while True:
