@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 import io 
 import os 
@@ -15,30 +16,40 @@ import serial
 #To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
 #Optionally, set iso to a fixed value.
 
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=10 )  # open serial port, timeout is in seconds
+ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
 print(ser.name)         # check which port was really used
 
 def send(filename):
   statinfo = os.stat(filename)
   print('send %s, size %d' % (filename, statinfo.st_size))
+  t0 = time.time()
   with open(filename, 'rb') as f:
           byte = f.read(1)
           i = 0
           while byte:
-            #bts = bytes(byte)
             i = i + 1
-            print('send  %d' % i)
-            print('byte %s' % byte)
+            #print('send  %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
-            # keep the buffers safe
-            
+            #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
+            if ((i % 64) == 0):
+              sleep(.03)
+  x = ser.read()  
+  t1 = time.time()       
+  print('%s sent, x = %s time is %d' % (filename, x, t1-t0))
+
 with picamera.PiCamera() as camera:
     #camera.start_preview()
-    camera.resolution = (320, 240)
-    #camera.exposure_mode = 'sports'
+    # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
+    # bw 640x480, 10 sec on Pi3
+    # color 640x480, 12 seconds
+    # color 1280x720, 27 seconds, with lossy of 20 17 sec, bw 20 lossy 14 sec
+    x = 1280
+    y = 720
+    camera.resolution = (x, y)
+    camera.exposure_mode = 'sports'
     #camera.iso = 100
-    camera.framerate=24
+    #camera.framerate=24
     # speed in in micro seconds, 6000000us, 6000ms, 6s
     #camera.exposure_speed = 100
     #camera.shutter_speed = camera.exposure_speed
@@ -47,15 +58,11 @@ with picamera.PiCamera() as camera:
     print('cam signed on')
     while True:
         print('capture')
-        image = np.empty((320*240*3,), dtype=np.uint8)
+        image = np.empty((x*y*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
-        image = image.reshape((240, 320, 3))
+        image = image.reshape((y, x, 3))
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
-        try:
-            _thread.start_new_thread(send, ('img.jpg'))
-        except:
-            print('eror')
-
-
+        #gray_image = image
+        cv2.imwrite('img.jpg',gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
+        send('img.jpg')
 
