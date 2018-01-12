@@ -10,40 +10,35 @@ from time import sleep
 import serial
 from queue import Queue
 from threading import Thread
+import picamera.array
 
-def checkImagePath(imagedir):
-    # if imagePath does not exist create the folder
-    if not os.path.isdir(imagePath):
-        if verbose:
-            print("Creating Image Storage folder %s" % (imagePath))
-        try:
-            os.makedirs(imagePath)
-        except:
-            print("ERROR - Could Not Create Folder %s" % imagePath)
-    return imagePath
+x = 640
+y = 480
+threshold = 10  # How Much pixel changes
+sensitivity = 100  # How many pixels change
+streamWidth = 128  # motion scan stream Width
+streamHeight = 80
 
-#------------------------------------------------------------------------------
-def getFileName(imagePath, imageNamePrefix, currentCount):
-    rightNow = datetime.datetime.now()
-    if imageNumOn :
-        # could use os.path.join to construct file image path
-        filename = imagePath + "/" + imageNamePrefix + str(currentCount) + ".jpg"
-    else:
-        filename = "%s/%s%04d%02d%02d-%02d%02d%02d.jpg" % ( imagePath, imageNamePrefix ,rightNow.year, rightNow.month, rightNow.day, rightNow.hour, rightNow.minute, rightNow.second)
-    return filename
+
+ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
+
 def takeStreamImage(width, height):
     with picamera.PiCamera() as camera:
+        print('take stream image %d, %d' % (x,y,))
         camera.resolution = (width, height)
         with picamera.array.PiRGBArray(camera) as stream:
             camera.exposure_mode = 'auto'
             camera.awb_mode = 'auto'
+            print('cap')
             camera.capture(stream, format='rgb')
             return stream.array
-          
+
 def scanMotion(width, height):
     motionFound = False
+    print('scan motion')
     data1 = takeStreamImage(width, height)
     while not motionFound:
+        print('no motion')
         data2 = takeStreamImage(width, height)
         diffCount = 0;
         for w in range(0, width):
@@ -51,28 +46,22 @@ def scanMotion(width, height):
                 # get the diff of the pixel. Conversion to int
                 # is required to avoid unsigned short overflow.
                 diff = abs(int(data1[h][w][1]) - int(data2[h][w][1]))
+                #print('dif %d' % diff)
                 if  diff > threshold:
                     diffCount += 1
             if diffCount > sensitivity:
                 break; #break outer loop.
         if diffCount > sensitivity:
+            print('motion!')
             motionFound = True
         else:
             data1 = data2
     return motionFound
-  
-def motionDetection():
-    print("Scanning for Motion threshold=%i sensitivity=%i ......"  % (threshold, sensitivity))
-    currentCount = imageNumStart
-    while True:
-        if scanMotion(streamWidth, streamHeight):
-            filename = getFileName(imagePath, imageNamePrefix, currentCount)
-            if imageNumOn:
-                currentCount += 1
-            takeDayImage( imageWidth, imageHeight, filename )  
+
 
 def send(filename):
   statinfo = os.stat(filename)
+  
   print('send %s, size %d' % (filename, statinfo.st_size))
   t0 = time.time()
   with open(filename, 'rb') as f:
@@ -104,7 +93,7 @@ def sender(i, q):
           print ('%s: sending' %  filename)
           send(filename)
           q.task_done()
-        
+
 def shoot(count):
   with picamera.PiCamera() as camera:
       #camera.start_preview()
@@ -159,18 +148,20 @@ def shoot(count):
 # Start Main Program Logic
 if __name__ == '__main__':
     try:
-      x = 640
-      y = 480
-      ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
       print(ser.name)         # check which port was really used
       while True:
+        print('motion check')
         if scanMotion(streamWidth, streamHeight):
-          shoot(10)
+          print('shoot')
+          shoot(3)
     except:
       print("")
       print("+++++++++++++++")
-      print("Exiting %s" % progName)
+      print("Exiting FUMi")
       print("+++++++++++++++")
+
+
+
 
 
 
