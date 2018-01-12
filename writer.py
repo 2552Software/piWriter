@@ -11,9 +11,6 @@ import serial
 from queue import Queue
 from threading import Thread
 
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
-print(ser.name)         # check which port was really used
-
 def checkImagePath(imagedir):
     # if imagePath does not exist create the folder
     if not os.path.isdir(imagePath):
@@ -107,37 +104,31 @@ def sender(i, q):
           print ('%s: sending' %  filename)
           send(filename)
           q.task_done()
-
-#To fix exposure time, set the shutter_speed attribute to a reasonable value.
-#To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
-#To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
-#Optionally, set iso to a fixed value.
-
-with picamera.PiCamera() as camera:
-    #camera.start_preview()
-    # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
-    # bw 640x480, 10 sec on Pi3
-    # color 640x480, 12 seconds
-    # color 1280x720, 27 seconds, with lossy of 20 17 sec, bw 20 lossy 14 sec
-    x = 640
-    y = 480
-    camera.resolution = (x, y)
-    camera.exposure_mode = 'sports'
-    #camera.iso = 100
-    #camera.framerate=24
-    # speed in in micro seconds, 6000000us, 6000ms, 6s
-    #camera.exposure_speed = 100
-    #camera.shuttle_speed = camera.exposure_speed
-    #sign on, let cam start
-    Q = Queue()
-    for i in range(1):
-      worker = Thread(target=sender, args=(i, Q,))
-      worker.setDaemon(True)
-      worker.start()
-    time.sleep(5)
-    print('cam signed on')
-    i = 1
-    while True:
+        
+def shoot(count):
+  with picamera.PiCamera() as camera:
+      #camera.start_preview()
+      # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
+      # bw 640x480, 10 sec on Pi3
+      # color 640x480, 12 seconds
+      # color 1280x720, 27 seconds, with lossy of 20 17 sec, bw 20 lossy 14 sec
+      camera.resolution = (x, y)
+      camera.exposure_mode = 'sports'
+      #camera.iso = 100
+      #camera.framerate=24
+      # speed in in micro seconds, 6000000us, 6000ms, 6s
+      #camera.exposure_speed = 100
+      #camera.shuttle_speed = camera.exposure_speed
+      #sign on, let cam start
+      Q = Queue()
+      for i in range(1):
+        worker = Thread(target=sender, args=(i, Q,))
+        worker.setDaemon(True)
+        worker.start()
+      time.sleep(2)
+      print('cam signed on')
+      i = 1
+      while True:
         print('capture')
         image = np.empty((x*y*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
@@ -151,15 +142,36 @@ with picamera.PiCamera() as camera:
         print('create %s' % filename)
         cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         Q.put(filename)
-        if (i > 60*60):
+        if (i > count):
          break
         sleepTime = 1  # min of 1 second
         print('nap')
         time.sleep(sleepTime)
+      print('wait for q')
+      Q.join()
+      print('all done!')
+    
+#To fix exposure time, set the shutter_speed attribute to a reasonable value.
+#To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
+#To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
+#Optionally, set iso to a fixed value.
 
-print('wait for q')
-Q.join()
-print('all done!')
+# Start Main Program Logic
+if __name__ == '__main__':
+    try:
+      x = 640
+      y = 480
+      ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
+      print(ser.name)         # check which port was really used
+      while True:
+        if scanMotion(streamWidth, streamHeight):
+          shoot(10)
+    except:
+      print("")
+      print("+++++++++++++++")
+      print("Exiting %s" % progName)
+      print("+++++++++++++++")
+
 
 
 
