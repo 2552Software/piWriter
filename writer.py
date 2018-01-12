@@ -29,7 +29,7 @@ def send(filename):
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
             if ((i % 512) == 0):
-              sleep(.2)
+              sleep(.25)
   x = ser.read()  
   t1 = time.time()       
   print('%s sent, x = %s time is %d' % (filename, x, t1-t0))
@@ -59,8 +59,8 @@ with picamera.PiCamera() as camera:
     # bw 640x480, 10 sec on Pi3
     # color 640x480, 12 seconds
     # color 1280x720, 27 seconds, with lossy of 20 17 sec, bw 20 lossy 14 sec
-    x = 320
-    y = 240
+    x = 640
+    y = 480
     camera.resolution = (x, y)
     camera.exposure_mode = 'sports'
     #camera.iso = 100
@@ -89,13 +89,19 @@ with picamera.PiCamera() as camera:
         filename = "img" + str(i) + ".jpg"
         i = i + 1
         print('create %s' % filename)
-        cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         Q.put(filename)
-        if (i > 60):
+        if (i > 60*60):
          break
-        time.sleep(1)
+        sleepTime = 1  # min of 1 second
+        print('nap')
+        time.sleep(sleepTime)
 
 print('wait for q')
 Q.join()
 print('all done!')
+
+
+
+
 
