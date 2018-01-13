@@ -28,9 +28,9 @@ streamHeight = 80
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
 def takeStreamImage(camera, width, height, fmt):
-    log.info('take stream image %d, %d' % (x,y,))
+    #enable for debug log.info('take stream image %d, %d' % (x,y,))
     with picamera.array.PiRGBArray(camera) as stream:
-        log.info('cap %s' % fmt)
+        #enable for debug log.info('cap %s' % fmt)
         # bgr or rgb
         camera.capture(stream, format=fmt)
         return stream.array
@@ -40,32 +40,27 @@ def scanMotionOpenCV(camera, width, height):
     avg = None
     while True:
         data =  takeStreamImage(camera, width, height, 'bgr')
-        #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
-        log.info('scan motion using OpenCV')
+        #enable for debug log.info('scan motion using OpenCV')
         # resize, grayscale & blur out noise
         gray = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
         # if the average frame is None, initialize it
         if avg is None:
-                log.info("setup average frame")
+                #enable for debug log.info("setup average frame")
                 avg = gray.copy().astype("float")
                 continue
         # accumulate the weighted average between the current frame and
         # previous frames, then compute the difference between the current
         # frame and running average
-        log.info('weight')
         cv2.accumulateWeighted(gray, avg, 0.5)
         frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
-        log.info("threshold")
         # threshold the delta image, dilate the thresholded image to fill
         # in holes, then find contours on thresholded image
         thresh = cv2.threshold(frame_delta, 5, 255, cv2.THRESH_BINARY)[1]
         thresh = cv2.dilate(thresh, None, iterations=2)
         (_, contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         motion = False
-        log.info('check contours')
         for c in contours:
-            log.info('contour')
             # if the contour is too small, ignore it
             if cv2.contourArea(c) < 5000:
                 log.info('no motion')
@@ -99,7 +94,6 @@ def scanMotion(camera, width, height):
         else:
             data1 = data2
     return motionFound
-
 
 def send(filename):
   statinfo = os.stat(filename)
