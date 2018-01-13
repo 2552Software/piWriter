@@ -27,15 +27,16 @@ streamHeight = 80
 
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
-def takeStreamImage(width, height):
+def takeStreamImage(width, height, fmt):
     with picamera.PiCamera() as camera:
         log.info('take stream image %d, %d' % (x,y,))
         camera.resolution = (width, height)
         with picamera.array.PiRGBArray(camera) as stream:
             camera.exposure_mode = 'auto'
             camera.awb_mode = 'auto'
-            log.info('cap')
-            camera.capture(stream, format='rgb')
+            log.info('cap %s' % fmt)
+            # bgr or rgb
+            camera.capture(stream, format=fmt)
             return stream.array
 
 #reference https://github.com/timatooth/catscanface
@@ -43,31 +44,34 @@ def scanMotionOpenCV(width, height):
     avg = None
     log.info('scan motion using OpenCV')
     while True:
-        image = takeStreamImage(width, height)
+        log.info('take test image')
+        image = takeStreamImage(width, height, 'bgr')
         # resize, grayscale & blur out noise
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
         # if the average frame is None, initialize it
         if avg is None:
-                log.info("Initialising average frame")
+                log.info("setup average frame")
                 avg = gray.copy().astype("float")
-                raw_capture.truncate(0)
                 continue
 
         # accumulate the weighted average between the current frame and
         # previous frames, then compute the difference between the current
         # frame and running average
+        log.info('weight')
         cv2.accumulateWeighted(gray, avg, 0.5)
         frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
-
+        log.info("threshold")
         # threshold the delta image, dilate the thresholded image to fill
         # in holes, then find contours on thresholded image
         thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
         thresh = cv2.dilate(thresh, None, iterations=2)
         (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         motion = False
+        log.info('check contours')
         for c in contours:
+            log.info('contour')
             # if the contour is too small, ignore it
             if cv2.contourArea(c) < args.min_area:
                 continue
@@ -79,7 +83,7 @@ def scanMotionOpenCV(width, height):
 def scanMotion(width, height):
     motionFound = False
     log.info('scan motion')
-    data1 = takeStreamImage(width, height)
+    data1 = takeStreamImage(width, height, 'rgb')
     while not motionFound:
         log.info('no motion')
         data2 = takeStreamImage(width, height)
