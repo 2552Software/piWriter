@@ -183,12 +183,9 @@ if __name__ == '__main__':
 
       with picamera.PiCamera() as camera:
           camera.resolution = (x,y)
-          camera.exposure_mode = 'auto'
-          camera.awb_mode = 'auto'
           camera.exposure_mode = 'sports'
           #camera.iso = 100 motion detection may need different settings than shooting, not sure yet
           while True:
-            log.info('motion check')
             if scanMotionOpenCV(camera, x,y):
               log.info('shoot')
               shoot(camera, 3, Q)
