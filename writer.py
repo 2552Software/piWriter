@@ -27,71 +27,61 @@ streamHeight = 80
 
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
-def takeStreamImage(width, height, fmt):
-    with picamera.PiCamera() as camera:
-        log.info('take stream image %d, %d' % (x,y,))
-        camera.resolution = (width, height)
-        with picamera.array.PiRGBArray(camera) as stream:
-            camera.exposure_mode = 'auto'
-            camera.awb_mode = 'auto'
-            log.info('cap %s' % fmt)
-            # bgr or rgb
-            camera.capture(stream, format=fmt)
-            return stream.array
+def takeStreamImage(camera, width, height, fmt):
+    log.info('take stream image %d, %d' % (x,y,))
+    with picamera.array.PiRGBArray(camera) as stream:
+        log.info('cap %s' % fmt)
+        # bgr or rgb
+        camera.capture(stream, format=fmt)
+        return stream.array
 
 #reference https://github.com/timatooth/catscanface
-def scanMotionOpenCV(width, height):
+def scanMotionOpenCV(camera, width, height):
     avg = None
-    with picamera.PiCamera() as camera:
-         with picamera.array.PiRGBArray(camera) as output:
-            log.info('cam ready')
-            camera.resolution = (width, height)
-            while True:
-                log.info('capture')
-                camera.capture(output, 'bgr')
-                #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
-                log.info('scan motion using OpenCV')
-                # resize, grayscale & blur out noise
-                gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
-                gray = cv2.GaussianBlur(gray, (21, 21), 0)
-                # if the average frame is None, initialize it
-                if avg is None:
-                        log.info("setup average frame")
-                        avg = gray.copy().astype("float")
-                        continue
-                # accumulate the weighted average between the current frame and
-                # previous frames, then compute the difference between the current
-                # frame and running average
-                log.info('weight')
-                cv2.accumulateWeighted(gray, avg, 0.5)
-                frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
-                log.info("threshold")
-                # threshold the delta image, dilate the thresholded image to fill
-                # in holes, then find contours on thresholded image
-                thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
-                thresh = cv2.dilate(thresh, None, iterations=2)
-                (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                motion = False
-                log.info('check contours')
-                for c in contours:
-                    log.info('contour')
-                    # if the contour is too small, ignore it
-                    if cv2.contourArea(c) < args.min_area:
-                        log.info('no motion')
-                        output.truncate(0)
-                        continue
+    while True:
+        data =  takeStreamImage(camera, width, height, 'bgr')
+        #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
+        log.info('scan motion using OpenCV')
+        # resize, grayscale & blur out noise
+        gray = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (21, 21), 0)
+        # if the average frame is None, initialize it
+        if avg is None:
+                log.info("setup average frame")
+                avg = gray.copy().astype("float")
+                continue
+        # accumulate the weighted average between the current frame and
+        # previous frames, then compute the difference between the current
+        # frame and running average
+        log.info('weight')
+        cv2.accumulateWeighted(gray, avg, 0.5)
+        frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+        log.info("threshold")
+        # threshold the delta image, dilate the thresholded image to fill
+        # in holes, then find contours on thresholded image
+        thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        motion = False
+        log.info('check contours')
+        for c in contours:
+            log.info('contour')
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < args.min_area:
+                log.info('no motion')
+                continue
 
-                    log.info("Motion detected")
-                    return True
-            
+            log.info("Motion detected")
+            return True
+
        
-def scanMotion(width, height):
+def scanMotion(camera, width, height):
     motionFound = False
     log.info('scan motion')
-    data1 = takeStreamImage(width, height, 'rgb')
+    data1 = takeStreamImage(camera, width, height, 'rgb')
     while not motionFound:
         log.info('no motion')
-        data2 = takeStreamImage(width, height)
+        data2 = takeStreamImage(camera, width, height)
         diffCount = 0;
         for w in range(0, width):
             for h in range(0, height):
@@ -146,16 +136,12 @@ def sender(i, q):
           send(filename)
           q.task_done()
 
-def shoot(count, Q):
-  with picamera.PiCamera() as camera:
+def shoot(camera, count, Q):
       #camera.start_preview()
       # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
       # bw 640x480, 10 sec on Pi3
       # color 640x480, 12 seconds
       # color 1280x720, 27 seconds, with lossy of 20 17 sec, bw 20 lossy 14 sec
-      camera.resolution = (x, y)
-      camera.exposure_mode = 'sports'
-      #camera.iso = 100
       #camera.framerate=24
       # speed in in micro seconds, 6000000us, 6000ms, 6s
       #camera.exposure_speed = 100
@@ -201,11 +187,17 @@ if __name__ == '__main__':
         worker.setDaemon(True)
         worker.start()
 
-      while True:
-        log.info('motion check')
-        if scanMotionOpenCV(x,y):
-          log.info('shoot')
-          shoot(3, Q)
+      with picamera.PiCamera() as camera:
+          camera.resolution = (x,y)
+          camera.exposure_mode = 'auto'
+          camera.awb_mode = 'auto'
+          camera.exposure_mode = 'sports'
+          #camera.iso = 100 motion detection may need different settings than shooting, not sure yet
+          while True:
+            log.info('motion check')
+            if scanMotionOpenCV(camera, x,y):
+              log.info('shoot')
+              shoot(camera, 3, Q)
     except:
       log.info('wait for q')
       Q.join()
