@@ -73,7 +73,7 @@ def scanMotionOpenCV(camera, width, height):
 
             log.info("Motion detected")
             return True
-
+         log.info("no motion")
        
 def scanMotion(camera, width, height):
     motionFound = False
