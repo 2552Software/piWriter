@@ -14,6 +14,7 @@ import picamera.array
 import logging
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s %(message)s', level=logging.INFO)
 log = logging.getLogger('fumi')
+ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
 
 x = 640
 y = 480
@@ -26,16 +27,14 @@ streamHeight = 80
 
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
-
 def takeStreamImage(width, height):
     with picamera.PiCamera() as camera:
-        print('take stream image %d, %d' % (x,y,))
+        log.info('take stream image %d, %d' % (x,y,))
         camera.resolution = (width, height)
         with picamera.array.PiRGBArray(camera) as stream:
             camera.exposure_mode = 'auto'
             camera.awb_mode = 'auto'
-            print('cap')
+            log.info('cap')
             camera.capture(stream, format='rgb')
             return stream.array
 
@@ -79,10 +78,10 @@ def scanMotionOpenCV(width, height):
        
 def scanMotion(width, height):
     motionFound = False
-    print('scan motion')
+    log.info('scan motion')
     data1 = takeStreamImage(width, height)
     while not motionFound:
-        print('no motion')
+        log.info('no motion')
         data2 = takeStreamImage(width, height)
         diffCount = 0;
         for w in range(0, width):
@@ -96,7 +95,7 @@ def scanMotion(width, height):
             if diffCount > sensitivity:
                 break; #break outer loop.
         if diffCount > sensitivity:
-            print('motion!')
+            log.info('motion!')
             motionFound = True
         else:
             data1 = data2
@@ -106,15 +105,15 @@ def scanMotion(width, height):
 def send(filename):
   statinfo = os.stat(filename)
   
-  print('send %s, size %d' % (filename, statinfo.st_size))
+  log.info('send %s, size %d' % (filename, statinfo.st_size))
   t0 = time.time()
   with open(filename, 'rb') as f:
           byte = f.read(1)
           i = 0
-          print('reading from %s' % filename)
+          log.info('reading from %s' % filename)
           while byte:
             i = i + 1
-            #print('send %d %s' % (i, byte))
+            #log.info('send %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
@@ -122,7 +121,7 @@ def send(filename):
               sleep(.25)
   x = ser.read()  
   t1 = time.time()       
-  print('%s sent, x = %s time is %d' % (filename, x, t1-t0))
+  log.info('%s sent, x = %s time is %d' % (filename, x, t1-t0))
 
 def sender(i, q):
     """This is the worker thread function.
@@ -134,7 +133,7 @@ def sender(i, q):
     while True:
         filename = q.get()
         if (len(filename) > 0):
-          print ('%s: sending' %  filename)
+          log.info ('%s: sending' %  filename)
           send(filename)
           q.task_done()
 
@@ -154,10 +153,10 @@ def shoot(count, Q):
       #camera.shuttle_speed = camera.exposure_speed
       #sign on, let cam start
       time.sleep(2)
-      print('cam signed on')
+      log.info('cam signed on')
       i = 1
       while True:
-        print('capture')
+        log.info('capture')
         image = np.empty((x*y*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
         image = image.reshape((y, x, 3))
@@ -167,7 +166,7 @@ def shoot(count, Q):
         #gray_image = image
         filename = "img" + str(i) + ".jpg"
         i = i + 1
-        print('create %s' % filename)
+        log.info('create %s' % filename)
         cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         Q.put(filename)
         if (i > count):
@@ -194,18 +193,15 @@ if __name__ == '__main__':
         worker.start()
 
       while True:
-        print('motion check')
+        log.info('motion check')
         if scanMotionOpenCV(x,y):
-          print('shoot')
+          log.info('shoot')
           shoot(3, Q)
     except:
-      print("")
-      print("+++++++++++++++")
-      print('wait for q')
+      log.info('wait for q')
       Q.join()
-      print('all done!')
-      print("Exiting FUMi")
-      print("+++++++++++++++")
+      log.info('all done!')
+      log.info("Exiting FUMi")
 
 
 
