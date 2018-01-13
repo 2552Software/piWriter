@@ -141,8 +141,6 @@ def shoot(camera, count, Q):
       #camera.exposure_speed = 100
       #camera.shuttle_speed = camera.exposure_speed
       #sign on, let cam start
-      time.sleep(2)
-      log.info('cam signed on')
       i = 1
       while True:
         log.info('capture')
@@ -184,6 +182,8 @@ if __name__ == '__main__':
       with picamera.PiCamera() as camera:
           camera.resolution = (x,y)
           camera.exposure_mode = 'sports'
+          sleep(5)
+          log.info('cam on')
           #camera.iso = 100 motion detection may need different settings than shooting, not sure yet
           while True:
             if scanMotionOpenCV(camera, x,y):
