@@ -43,51 +43,47 @@ def takeStreamImage(width, height, fmt):
 def scanMotionOpenCV(width, height):
     avg = None
     with picamera.PiCamera() as camera:
-        log.info('cam ready')
-        camera.resolution = (width, height)
-        #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
-        log.info('scan motion using OpenCV')
-        raw_capture = PiRGBArray(camera, size=(width, height))
-        log.info('looop')
-        for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
-            log.info('capture')
-            frame = f.array
-            log.info('take test image')
-            # resize, grayscale & blur out noise
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray = cv2.GaussianBlur(gray, (21, 21), 0)
+         with picamera.array.PiRGBArray(camera) as output:
+            log.info('cam ready')
+            camera.resolution = (width, height)
+            while True:
+                log.info('capture')
+                camera.capture(output, 'bgr')
+                #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
+                log.info('scan motion using OpenCV')
+                # resize, grayscale & blur out noise
+                gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
+                gray = cv2.GaussianBlur(gray, (21, 21), 0)
+                # if the average frame is None, initialize it
+                if avg is None:
+                        log.info("setup average frame")
+                        avg = gray.copy().astype("float")
+                        continue
+                # accumulate the weighted average between the current frame and
+                # previous frames, then compute the difference between the current
+                # frame and running average
+                log.info('weight')
+                cv2.accumulateWeighted(gray, avg, 0.5)
+                frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+                log.info("threshold")
+                # threshold the delta image, dilate the thresholded image to fill
+                # in holes, then find contours on thresholded image
+                thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
+                thresh = cv2.dilate(thresh, None, iterations=2)
+                (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                motion = False
+                log.info('check contours')
+                for c in contours:
+                    log.info('contour')
+                    # if the contour is too small, ignore it
+                    if cv2.contourArea(c) < args.min_area:
+                        log.info('no motion')
+                        output.truncate(0)
+                        continue
 
-            # if the average frame is None, initialize it
-            if avg is None:
-                    log.info("setup average frame")
-                    avg = gray.copy().astype("float")
-                    continue
-
-            # accumulate the weighted average between the current frame and
-            # previous frames, then compute the difference between the current
-            # frame and running average
-            log.info('weight')
-            cv2.accumulateWeighted(gray, avg, 0.5)
-            frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
-            log.info("threshold")
-            # threshold the delta image, dilate the thresholded image to fill
-            # in holes, then find contours on thresholded image
-            thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=2)
-            (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            motion = False
-            log.info('check contours')
-            for c in contours:
-                log.info('contour')
-                # if the contour is too small, ignore it
-                if cv2.contourArea(c) < args.min_area:
-                    log.info('no motion')
-                    raw_capture.truncate(0)
-                    continue
-
-                log.info("Motion detected")
-                return True
-
+                    log.info("Motion detected")
+                    return True
+            
        
 def scanMotion(width, height):
     motionFound = False
