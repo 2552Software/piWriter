@@ -11,6 +11,7 @@ import serial
 from queue import Queue
 from threading import Thread
 import picamera.array
+import logging
 
 x = 640
 y = 480
@@ -33,6 +34,44 @@ def takeStreamImage(width, height):
             camera.capture(stream, format='rgb')
             return stream.array
 
+#reference https://github.com/timatooth/catscanface
+def scanMotionOpenCV(width, height)
+    avg = None
+    log.info('scan motion using OpenCV')
+    while True:
+        image = takeStreamImage(width, height)
+        # resize, grayscale & blur out noise
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (21, 21), 0)
+
+        # if the average frame is None, initialize it
+        if avg is None:
+                log.info("Initialising average frame")
+                avg = gray.copy().astype("float")
+                raw_capture.truncate(0)
+                continue
+
+        # accumulate the weighted average between the current frame and
+        # previous frames, then compute the difference between the current
+        # frame and running average
+        cv2.accumulateWeighted(gray, avg, 0.5)
+        frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+
+        # threshold the delta image, dilate the thresholded image to fill
+        # in holes, then find contours on thresholded image
+        thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        motion = False
+        for c in contours:
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < args.min_area:
+                continue
+
+            log.info("Motion detected")
+            return True
+
+       
 def scanMotion(width, height):
     motionFound = False
     print('scan motion')
@@ -148,7 +187,8 @@ def shoot(count):
 # Start Main Program Logic
 if __name__ == '__main__':
     try:
-      print(ser.name)         # check which port was really used
+      logging.basicConfig(filename='FUMi.log', level=logging.INFO)        
+      log.info(ser.name)         # check which port was really used
       while True:
         print('motion check')
         if scanMotion(streamWidth, streamHeight):
