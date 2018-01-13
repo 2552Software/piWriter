@@ -42,9 +42,14 @@ def takeStreamImage(width, height, fmt):
 #reference https://github.com/timatooth/catscanface
 def scanMotionOpenCV(width, height):
     avg = None
+    camera = PiCamera()
+    camera.resolution = (width, height)
+    #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
     log.info('scan motion using OpenCV')
-    raw_capture = PiRGBArray(camera, size=(x, y))
+    raw_capture = PiRGBArray(camera, size=(width, height))
+    log.info('looop')
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+        log.info('capture')
         frame = f.array
         log.info('take test image')
         # resize, grayscale & blur out noise
@@ -56,7 +61,7 @@ def scanMotionOpenCV(width, height):
                 log.info("setup average frame")
                 avg = gray.copy().astype("float")
                 continue
-
+      
         # accumulate the weighted average between the current frame and
         # previous frames, then compute the difference between the current
         # frame and running average
@@ -75,6 +80,8 @@ def scanMotionOpenCV(width, height):
             log.info('contour')
             # if the contour is too small, ignore it
             if cv2.contourArea(c) < args.min_area:
+                log.info('no motion')
+                raw_capture.truncate(0)
                 continue
 
             log.info("Motion detected")
