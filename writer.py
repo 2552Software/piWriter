@@ -133,7 +133,7 @@ def sender(i, q):
           send(filename)
           q.task_done()
 
-def shoot(count):
+def shoot(count, Q):
   with picamera.PiCamera() as camera:
       #camera.start_preview()
       # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
@@ -148,11 +148,6 @@ def shoot(count):
       #camera.exposure_speed = 100
       #camera.shuttle_speed = camera.exposure_speed
       #sign on, let cam start
-      Q = Queue()
-      for i in range(1):
-        worker = Thread(target=sender, args=(i, Q,))
-        worker.setDaemon(True)
-        worker.start()
       time.sleep(2)
       print('cam signed on')
       i = 1
@@ -175,9 +170,7 @@ def shoot(count):
         sleepTime = 1  # min of 1 second
         print('nap')
         time.sleep(sleepTime)
-      print('wait for q')
-      Q.join()
-      print('all done!')
+      log.info('done shooting for now')
     
 #To fix exposure time, set the shutter_speed attribute to a reasonable value.
 #To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
@@ -189,14 +182,24 @@ if __name__ == '__main__':
     try:
       logging.basicConfig(filename='FUMi.log', level=logging.INFO)        
       log.info(ser.name)         # check which port was really used
+      log.info('start threads')
+      Q = Queue()
+      for i in range(1):
+        worker = Thread(target=sender, args=(i, Q,))
+        worker.setDaemon(True)
+        worker.start()
+
       while True:
         print('motion check')
-        if scanMotion(streamWidth, streamHeight):
+        if scanMotionOpenCV(x,y):
           print('shoot')
-          shoot(3)
+          shoot(3, Q)
     except:
       print("")
       print("+++++++++++++++")
+      print('wait for q')
+      Q.join()
+      print('all done!')
       print("Exiting FUMi")
       print("+++++++++++++++")
 
