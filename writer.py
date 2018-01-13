@@ -12,11 +12,13 @@ from queue import Queue
 from threading import Thread
 import picamera.array
 import logging
+logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s %(message)s', level=logging.INFO)
+log = logging.getLogger('fumi')
 
 x = 640
 y = 480
 
-// for no opencv motion detection
+# for no opencv motion detection
 threshold = 10  # How Much pixel changes
 sensitivity = 100  # How many pixels change
 streamWidth = 128  # motion scan stream Width
@@ -38,7 +40,7 @@ def takeStreamImage(width, height):
             return stream.array
 
 #reference https://github.com/timatooth/catscanface
-def scanMotionOpenCV(width, height)
+def scanMotionOpenCV(width, height):
     avg = None
     log.info('scan motion using OpenCV')
     while True:
@@ -183,7 +185,6 @@ def shoot(count, Q):
 # Start Main Program Logic
 if __name__ == '__main__':
     try:
-      logging.basicConfig(filename='FUMi.log', level=logging.INFO)        
       log.info(ser.name)         # check which port was really used
       log.info('start threads')
       Q = Queue()
