@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+/usr/bin/python3
 import io 
 import os 
 import time 
@@ -18,7 +18,7 @@ ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial
 
 x = 640
 y = 480
-
+picCount = 0
 # for no opencv motion detection
 threshold = 10  # How Much pixel changes
 sensitivity = 100  # How many pixels change
@@ -28,9 +28,9 @@ streamHeight = 80
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
 def takeStreamImage(camera, width, height, fmt):
-    #enable for debug log.info('take stream image %d, %d' % (x,y,))
+    #log.info('take stream image %d, %d' % (x,y,))
     with picamera.array.PiRGBArray(camera) as stream:
-        #enable for debug log.info('cap %s' % fmt)
+        #log.info('cap %s' % fmt)
         # bgr or rgb
         camera.capture(stream, format=fmt)
         return stream.array
@@ -40,13 +40,16 @@ def scanMotionOpenCV(camera, width, height):
     avg = None
     while True:
         data =  takeStreamImage(camera, width, height, 'bgr')
-        #enable for debug log.info('scan motion using OpenCV')
+        #bugbug set from globals all places used this and ISO etc camera.framerate = args.fps
+        #log.info('scan motion using OpenCV')
         # resize, grayscale & blur out noise
         gray = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
+        #cv2.imwrite('HI.jpg',gray, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
+
         # if the average frame is None, initialize it
         if avg is None:
-                #enable for debug log.info("setup average frame")
+                #log.info("setup average frame")
                 avg = gray.copy().astype("float")
                 continue
         # accumulate the weighted average between the current frame and
@@ -68,8 +71,8 @@ def scanMotionOpenCV(camera, width, height):
 
             log.info("Motion detected")
             return True
-         log.info("no motion")
-       
+        log.info('no motion dude')
+
 def scanMotion(camera, width, height):
     motionFound = False
     log.info('scan motion')
@@ -95,6 +98,7 @@ def scanMotion(camera, width, height):
             data1 = data2
     return motionFound
 
+
 def send(filename):
   statinfo = os.stat(filename)
   
@@ -103,15 +107,17 @@ def send(filename):
   with open(filename, 'rb') as f:
           byte = f.read(1)
           i = 0
-          log.info('reading from %s' % filename)
           while byte:
             i = i + 1
             #log.info('send %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
+            if (byte == 'h'):
+             log.info('!!!!')
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
             if ((i % 512) == 0):
-              sleep(.25)
+              sleep(.20)
+          sleep(1)
   x = ser.read()  
   t1 = time.time()       
   log.info('%s sent, x = %s time is %d' % (filename, x, t1-t0))
@@ -130,7 +136,7 @@ def sender(i, q):
           send(filename)
           q.task_done()
 
-def shoot(camera, count, Q):
+def shoot(camera, picCount, count, Q):
       #camera.start_preview()
       # bw 320x240, 3 sec on Pi3, lossy of 20 3 sec (no change)
       # bw 640x480, 10 sec on Pi3
@@ -141,8 +147,11 @@ def shoot(camera, count, Q):
       #camera.exposure_speed = 100
       #camera.shuttle_speed = camera.exposure_speed
       #sign on, let cam start
-      i = 1
+      log.info('cam signed on')
+      i = 0
       while True:
+        picCount = picCount + 1
+        i = i + 1
         log.info('capture')
         image = np.empty((x*y*3,), dtype=np.uint8)
         camera.capture(image, format='bgr')
@@ -151,8 +160,7 @@ def shoot(camera, count, Q):
         #encimg = cv2.imencode('.jpg', img, encode_param)
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         #gray_image = image
-        filename = "img" + str(i) + ".jpg"
-        i = i + 1
+        filename = "img" + str(picCount) + ".jpg"
         log.info('create %s' % filename)
         cv2.imwrite(filename,gray_image, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         Q.put(filename)
@@ -162,6 +170,7 @@ def shoot(camera, count, Q):
           log.info('nap %d seconds' % sleepTime)
           time.sleep(sleepTime)
       log.info('done shooting for now')
+      sleep(sleepTime)
     
 #To fix exposure time, set the shutter_speed attribute to a reasonable value.
 #To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
@@ -182,18 +191,23 @@ if __name__ == '__main__':
       with picamera.PiCamera() as camera:
           camera.resolution = (x,y)
           camera.exposure_mode = 'sports'
-          sleep(5)
-          log.info('cam on')
+          sleep(2)
           #camera.iso = 100 motion detection may need different settings than shooting, not sure yet
           while True:
             if scanMotionOpenCV(camera, x,y):
-              log.info('shoot')
-              shoot(camera, 3, Q)
+              shoot(camera, picCount, 3, Q)
     except:
-      log.info('wait for q')
+      log.info('crash, wait for q')
       Q.join()
-      log.info('all done!')
       log.info("Exiting FUMi")
+
+
+
+
+
+
+
+
 
 
 
