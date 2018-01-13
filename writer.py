@@ -15,11 +15,14 @@ import logging
 
 x = 640
 y = 480
+
+// for no opencv motion detection
 threshold = 10  # How Much pixel changes
 sensitivity = 100  # How many pixels change
 streamWidth = 128  # motion scan stream Width
 streamHeight = 80
 
+sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
 ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
 
@@ -167,9 +170,9 @@ def shoot(count, Q):
         Q.put(filename)
         if (i > count):
          break
-        sleepTime = 1  # min of 1 second
-        print('nap')
-        time.sleep(sleepTime)
+        if (sleepTime) :
+          log.info('nap %d seconds' % sleepTime)
+          time.sleep(sleepTime)
       log.info('done shooting for now')
     
 #To fix exposure time, set the shutter_speed attribute to a reasonable value.
