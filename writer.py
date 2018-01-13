@@ -43,11 +43,12 @@ def takeStreamImage(width, height, fmt):
 def scanMotionOpenCV(width, height):
     avg = None
     log.info('scan motion using OpenCV')
-    while True:
+    raw_capture = PiRGBArray(camera, size=(x, y))
+    for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+        frame = f.array
         log.info('take test image')
-        image = takeStreamImage(width, height, 'bgr')
         # resize, grayscale & blur out noise
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
         # if the average frame is None, initialize it
