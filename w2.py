@@ -26,7 +26,7 @@ def sendBinary(filename):
     BLOCKSIZE = 4096
     result = []
     current = ''
-    with open(filename, 'rb') as f:
+    with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         c = ser.write(block)
         log.info('sent %d' % c)
