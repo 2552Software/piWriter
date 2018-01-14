@@ -54,7 +54,7 @@ def sender(i, q):
     infinite loop, and only exit when
     the main thread ends.
     """
-:    while True:
+    while True:
         filename = q.get()
         if (len(filename) > 0):
           log.info ('%s: sending' %  filename)
