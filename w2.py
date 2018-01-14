@@ -40,6 +40,7 @@ def sendBinary(filename):
         sleep(.1)
         #x = ser.read()  
     while True:
+        sleep(100)
         x = ser.read()
         if (x == 1):
           log.info('x')  
