@@ -75,5 +75,5 @@ if __name__ == '__main__':
           sleep(2)
           scanMotionOpenCV(camera)
     except:
-
+          log.info("stop")
 
