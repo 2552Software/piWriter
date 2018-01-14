@@ -102,7 +102,7 @@ def scanMotionOpenCV(camera):
         worker = Thread(target=sender, args=(i, Q,))
         worker.setDaemon(True)
         worker.start()
-    log.info('start threads')
+#    log.info('start threads')
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
           #log.info('next frame')  
           frame = f.array
@@ -130,10 +130,10 @@ def scanMotionOpenCV(camera):
               # if the contour is too small, ignore it
               if cv2.contourArea(c) < 5000:
                   continue
-              log.info("Motion detected")
+              #log.info("Motion detected")
               filename = "img" + str(picCount) + ".jpg"
               picCount = picCount + 1
-              log.info('create %s' % filename)
+              #log.info('create %s' % filename)
               gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
               Q.put(filename)
