@@ -103,6 +103,7 @@ def scanMotionOpenCV(camera, Q):
               picCount = picCount + 1
               log.info('create %s' % filename)
               cv2.imwrite(filename,frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+              Q.put(filename)
               if (sleepTime) :
                 log.info('nap %d seconds' % sleepTime)
                 time.sleep(sleepTime)
