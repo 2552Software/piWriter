@@ -54,7 +54,7 @@ def sender(i, q):
     infinite loop, and only exit when
     the main thread ends.
     """
-    while True:
+:    while True:
         filename = q.get()
         if (len(filename) > 0):
           log.info ('%s: sending' %  filename)
@@ -112,7 +112,7 @@ def scanMotionOpenCV(camera, Q):
              if (sleepTime) :
               log.info('nap %d seconds' % sleepTime)
               time.sleep(sleepTime)
-          else
+          else:
             log.info('no motion')
 
 # Start Main Program Logic
