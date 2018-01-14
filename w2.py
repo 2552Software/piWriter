@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 #cv only motion cam
 import io 
@@ -24,18 +23,20 @@ y = 480
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
 def sendBinary(filename):
-    BLOCKSIZE = 4096
+    BLOCKSIZE = 128
     result = []
     current = ''
     statinfo = os.stat(filename)
     log.info('send %s, size %d' % (filename, statinfo.st_size))
     with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
+        log.info('block')
         if (len(block) == 0):
             log.info('bye')
             break
         c = ser.write(block)
         log.info('sent %d' % c)
+        x = ser.read()  
       
 def send(filename):
   statinfo = os.stat(filename)
