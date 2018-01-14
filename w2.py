@@ -29,7 +29,7 @@ def sendBinary(filename):
     with open(filename, 'rb') as f:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         c = ser.write(block)
-       log.info('sent %d' % c)
+        log.info('sent %d' % c)
       
 def send(filename):
   statinfo = os.stat(filename)
