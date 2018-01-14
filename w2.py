@@ -33,7 +33,7 @@ def send(filename):
           i = 0
           while byte:
             i = i + 1
-            #log.info('send %d %s' % (i, byte))
+            log.info('send %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
             if (byte == 'h'):
