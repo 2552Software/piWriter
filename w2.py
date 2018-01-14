@@ -32,7 +32,7 @@ def send(filename):
           #byte = f.read(1)
           data = f.read()
           c = ser.write(data)
-          info.log('sent %d' % c)
+          log.info('sent %d' % c)
           sleep(5000)
           i = 0
           while byte:
