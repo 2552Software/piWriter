@@ -103,7 +103,7 @@ def scanMotionOpenCV(camera, Q):
               log.info("Motion detected")
               motion = true
               break
-           if motion:   
+          if motion:   
              log.info('motion')
              filename = "img" + str(picCount) + ".jpg"
              picCount = picCount + 1
@@ -112,7 +112,7 @@ def scanMotionOpenCV(camera, Q):
              if (sleepTime) :
               log.info('nap %d seconds' % sleepTime)
               time.sleep(sleepTime)
-           else
+          else
             log.info('no motion')
 
 # Start Main Program Logic
