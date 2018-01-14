@@ -28,6 +28,7 @@ def send(filename):
   log.info('send %s, size %d' % (filename, statinfo.st_size))
   t0 = time.time()
   with open(filename, 'rb') as f:
+          log.info('file open')
           byte = f.read(1)
           i = 0
           while byte:
@@ -102,7 +103,8 @@ def scanMotionOpenCV(camera, Q):
               filename = "img" + str(picCount) + ".jpg"
               picCount = picCount + 1
               log.info('create %s' % filename)
-              cv2.imwrite(filename,frame, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
+              gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+              cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
               Q.put(filename)
               break
           if (sleepTime) :
