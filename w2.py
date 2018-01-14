@@ -74,7 +74,8 @@ def scanMotionOpenCV(camera, Q):
     raw_capture = PiRGBArray(camera, size=(x,y))
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
           log.info('next frame')  
-          frame = f.array
+
+        frame = f.array
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
           gray = cv2.GaussianBlur(gray, (21, 21), 0)
@@ -116,6 +117,7 @@ def scanMotionOpenCV(camera, Q):
               time.sleep(sleepTime)
           else:
             log.info('no motion')
+           raw_capture.truncate(0)  
 
 # Start Main Program Logic
 if __name__ == '__main__':
