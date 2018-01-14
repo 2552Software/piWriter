@@ -68,11 +68,12 @@ def sender(i, q):
 #Optionally, set iso to a fixed value.
 
 def scanMotionOpenCV(camera, Q):
+    log.info('scan')  
     avg = None
     raw_capture = PiRGBArray(camera, size=(x,y))
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+          log.info('next frame')  
           frame = f.array
-          #log.info('scan motion using OpenCV')
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
           gray = cv2.GaussianBlur(gray, (21, 21), 0)
@@ -128,6 +129,7 @@ if __name__ == '__main__':
       with picamera.PiCamera() as camera:
           camera.resolution = (x,y)
           camera.exposure_mode = 'sports'
+          sleep(2)
           scanMotionOpenCV(camera, Q)
     except:
       log.info('crash, wait for q')
