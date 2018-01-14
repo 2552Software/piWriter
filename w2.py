@@ -28,14 +28,15 @@ def sendBinary(filename):
     current = ''
     statinfo = os.stat(filename)
     log.info('send %s, size %d' % (filename, statinfo.st_size))
+    bytes = 0
     with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         log.info('block')
         if (len(block) == 0):
             log.info('bye')
             break
+        bytes = bytes + len(block)
         c = ser.write(block)
-        log.info('sent %d' % c)
         sleep(.1)
         #x = ser.read()  
     while True:
