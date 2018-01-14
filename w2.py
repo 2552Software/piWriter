@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 #cv only motion cam
 import io 
@@ -26,6 +27,8 @@ def sendBinary(filename):
     BLOCKSIZE = 4096
     result = []
     current = ''
+    statinfo = os.stat(filename)
+    log.info('send %s, size %d' % (filename, statinfo.st_size))
     with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         if (len(block) == 0):
