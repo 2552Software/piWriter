@@ -66,11 +66,17 @@ def sender(i, q):
 #To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
 #Optionally, set iso to a fixed value.
 
-def scanMotionOpenCV(camera, Q):
+def scanMotionOpenCV(camera):
     log.info('scan')  
     avg = None
     picCount = 0
     raw_capture = PiRGBArray(camera, size=(x,y))
+    Q = Queue()
+    for i in range(1):
+        worker = Thread(target=sender, args=(i, Q,))
+        worker.setDaemon(True)
+        worker.start()
+    log.info('start threads')
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
           log.info('next frame')  
           frame = f.array
@@ -78,7 +84,6 @@ def scanMotionOpenCV(camera, Q):
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
           gray = cv2.GaussianBlur(gray, (21, 21), 0)
           #cv2.imwrite('HI.jpg',gray, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
-
           # if the average frame is None, initialize it
           if avg is None:
                   #log.info("setup average frame")
@@ -116,20 +121,13 @@ def scanMotionOpenCV(camera, Q):
 if __name__ == '__main__':
     try:
       log.info(ser.name)         # check which port was really used
-      log.info('start threads')
-      Q = Queue()
-      for i in range(1):
-        worker = Thread(target=sender, args=(i, Q,))
-        worker.setDaemon(True)
-        worker.start()
+     
       with picamera.PiCamera() as camera:
           camera.resolution = (x,y)
           camera.exposure_mode = 'sports'
           sleep(2)
-          scanMotionOpenCV(camera, Q)
+          scanMotionOpenCV(camera)
     except:
-      log.info('crash, wait for q')
-      Q.join()
       log.info("Exiting FUMi")
 
 
