@@ -36,6 +36,7 @@ def sendBinary(filename):
             break
         bytes = bytes + len(block)
         c = ser.write(block)
+        ser.flush()
         log.info('send %d of %d' % (c, bytes))
         sleep(2)
         #x = ser.read()  
