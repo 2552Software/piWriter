@@ -20,10 +20,7 @@ ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial
 
 x = 640
 y = 480
-picCount = 0
-
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
-
 
 def send(filename):
   statinfo = os.stat(filename)
@@ -71,6 +68,7 @@ def sender(i, q):
 def scanMotionOpenCV(camera, Q):
     log.info('scan')  
     avg = None
+    picCount = 0
     raw_capture = PiRGBArray(camera, size=(x,y))
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
           log.info('next frame')  
