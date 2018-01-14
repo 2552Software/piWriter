@@ -31,12 +31,12 @@ def sendBinary(filename):
     bytes = 0
     with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
-        log.info('block')
         if (len(block) == 0):
             log.info('bye')
             break
         bytes = bytes + len(block)
         c = ser.write(block)
+        log.info('send %d of %d' % (c, bytes))
         sleep(.1)
         #x = ser.read()  
     while True:
@@ -59,7 +59,6 @@ def send(filename):
           i = 0
           while byte:
             i = i + 1
-            log.info('send %d %s' % (i, byte))
             ser.write(byte)
             byte  = f.read(1)
             if (byte == 'h'):
