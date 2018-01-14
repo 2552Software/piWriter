@@ -96,26 +96,19 @@ def scanMotionOpenCV(camera, Q):
           thresh = cv2.threshold(frame_delta, 5, 255, cv2.THRESH_BINARY)[1]
           thresh = cv2.dilate(thresh, None, iterations=2)
           (_, contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-          motion = False
           for c in contours:
               # if the contour is too small, ignore it
               if cv2.contourArea(c) < 5000:
                   continue
-
               log.info("Motion detected")
-              motion = true
+              filename = "img" + str(picCount) + ".jpg"
+              picCount = picCount + 1
+              log.info('create %s' % filename)
+              cv2.imwrite(filename,frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+              if (sleepTime) :
+                log.info('nap %d seconds' % sleepTime)
+                time.sleep(sleepTime)
               break
-          if motion:   
-             log.info('motion')
-             filename = "img" + str(picCount) + ".jpg"
-             picCount = picCount + 1
-             log.info('create %s' % filename)
-             cv2.imwrite(filename,frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-             if (sleepTime) :
-              log.info('nap %d seconds' % sleepTime)
-              time.sleep(sleepTime)
-          else:
-            log.info('no motion')
           raw_capture.truncate(0)  
 
 # Start Main Program Logic
