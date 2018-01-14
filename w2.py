@@ -39,8 +39,8 @@ def send(filename):
             if (byte == 'h'):
              log.info('!!!!')
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
-            if ((i % 512) == 0):
-              sleep(.20)
+            if ((i % 128) == 0):
+              sleep(.30)
           sleep(1)
   x = ser.read()  
   t1 = time.time()       
