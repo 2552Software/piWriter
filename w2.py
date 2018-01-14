@@ -37,7 +37,11 @@ def sendBinary(filename):
         c = ser.write(block)
         log.info('sent %d' % c)
         x = ser.read()  
-      
+     while True:
+        x = ser.read()
+        if (x == 1):
+          log.info('x')  
+          break;
 def send(filename):
   statinfo = os.stat(filename)
   
