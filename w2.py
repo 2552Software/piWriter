@@ -20,7 +20,7 @@ ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial
 
 x = 640
 y = 480
-sleepTime = 0  # time for camera to wait between pictures in seconds (can be .1 etc also)
+sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
 def send(filename):
   statinfo = os.stat(filename)
