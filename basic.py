@@ -22,7 +22,7 @@ sleepTime = 0  # time for camera to wait between pictures in seconds (can be .1 
 #To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
 #Optionally, set iso to a fixed value.
 
-def scanMotionOpenCV(camera, Q):
+def scanMotionOpenCV(camera):
     log.info('scan')  
     avg = None
     picCount = 0
@@ -73,10 +73,7 @@ if __name__ == '__main__':
           camera.resolution = (x,y)
           camera.exposure_mode = 'sports'
           sleep(2)
-          scanMotionOpenCV(camera, Q)
+          scanMotionOpenCV(camera)
     except:
-      log.info('crash, wait for q')
-      Q.join()
-      log.info("Exiting")
 
 
