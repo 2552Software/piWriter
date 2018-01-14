@@ -63,7 +63,7 @@ def sender(i, q):
 
 #To fix exposure time, set the shutter_speed attribute to a reasonable value.
 #To fix exposure gains, let analog_gain and digital_gain settle on reasonable values, then set exposure_mode to 'off'.
-#To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
+##To fix white balance, set the awb_mode to 'off', then set awb_gains to a (red, blue) tuple of gains.
 #Optionally, set iso to a fixed value.
 
 def scanMotionOpenCV(camera):
@@ -78,7 +78,7 @@ def scanMotionOpenCV(camera):
         worker.start()
     log.info('start threads')
     for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
-          log.info('next frame')  
+          #log.info('next frame')  
           frame = f.array
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -113,7 +113,7 @@ def scanMotionOpenCV(camera):
               Q.put(filename)
               break
           if (sleepTime) :
-              log.info('nap %d seconds' % sleepTime)
+              #log.info('nap %d seconds' % sleepTime)
               time.sleep(sleepTime)              
           raw_capture.truncate(0)  
 
