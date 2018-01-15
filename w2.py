@@ -90,7 +90,7 @@ def scanMotionOpenCV(camera):
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
           blur = cv2.GaussianBlur(gray, (21, 21), 0)
-          #cv2.imwrite('HI.jpg',gray, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
+#          #cv2.imwrite('HI.jpg',gray, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
           # if the average frame is None, initialize it
           if avg is None:
                   #log.info("setup average frame")
@@ -115,7 +115,7 @@ def scanMotionOpenCV(camera):
               filename = "img2" + str(picCount) + ".jpg"
               picCount = picCount + 1
               #log.info('create %s' % filename)
-              gray = gray.reshape((y, x, 3))            
+              #gray = gray.reshape((y, x, 3))            
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
               Q.put(filename)
               sleep(1)
