@@ -32,7 +32,7 @@ def takeStreamImage(camera, width, height, fmt):
       
 def send(filename):
   statinfo = os.stat(filename)
-  
+#  
   log.info('send %s, size %d' % (filename, statinfo.st_size))
   t0 = time.time()
   with open(filename, 'rb') as f:
@@ -45,8 +45,8 @@ def send(filename):
             ser.write(byte)
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
-            if ((i % 64) == 0):
-              sleep(.30)
+            #if ((i % 64) == 0):
+             # sleep(.30)
           sleep(1)
   log.info('wait')      
   x = ser.read()  
