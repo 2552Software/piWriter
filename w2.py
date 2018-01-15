@@ -19,8 +19,8 @@ logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s %(message)s', lev
 log = logging.getLogger('fumi')
 ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=60 )  # open serial port, timeout is in seconds
 
-x = 320
-y = 240
+x = 320*2
+y = 240*2
 sleepTime = .1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 def sendBinary(filename):
     BLOCKSIZE = 1024
@@ -136,7 +136,7 @@ def scanMotionOpenCV(camera):
               picCount = picCount + 1
               #log.info('create %s' % filename)
               #gray = gray.reshape((y, x, 3))            
-              cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
+              cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 30])
               Q.put(filename)
               break
           if (sleepTime) :
