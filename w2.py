@@ -29,6 +29,7 @@ def sendBinary(filename):
     statinfo = os.stat(filename)
     log.info('send %s, size %d' % (filename, statinfo.st_size))
     bytes = 0
+    t0 = time.time()
     with open(filename, 'rb') as fp:
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         if (len(block) == 0):
@@ -38,7 +39,9 @@ def sendBinary(filename):
         c = ser.write(block)
         log.info('send %d of %d' % (c, bytes))
     x = ser.read()  
-
+    t1 = time.time()       
+    log.info('%s sent, x = %s time is %d' % (filename, x, t1-t0))
+    
 def takeStreamImage(camera, width, height, fmt):
     #log.info('take stream image %d, %d' % (x,y,))
     with picamera.array.PiRGBArray(camera) as stream:
