@@ -32,18 +32,13 @@ def send(filename):
           log.info('file open')
           #byte = f.read(1)
           data = f.read()
-          c = ser.write(data)
-          log.info('sent %d' % c)
-          sleep(5000)
           i = 0
           while byte:
             i = i + 1
             ser.write(byte)
             byte  = f.read(1)
-            if (byte == 'h'):
-             log.info('!!!!')
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
-            if ((i % 128) == 0):
+            if ((i % 16) == 0):
               sleep(.30)
           sleep(1)
   x = ser.read()  
