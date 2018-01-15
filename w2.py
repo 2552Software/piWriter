@@ -1,4 +1,4 @@
-
+ 
 #!/usr/bin/python3
 #cv only motion cam
 import io 
@@ -38,7 +38,7 @@ def sendBinary(filename):
             break
         bytes = bytes + len(block)
         c = ser.write(block)
-        sleep(.25)
+        sleep(.15) #.25 is slow but steady, .1 is ...
         log.info('send %d of %d' % (c, bytes))
     x = ser.read()  
     t1 = time.time()       
