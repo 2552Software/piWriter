@@ -84,24 +84,24 @@ def scanMotionOpenCV(camera):
         worker.setDaemon(True)
         worker.start()
 #    log.info('start threads')
-    for f in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+    while True:
+          frame = takeStreamImage(camera, x, y, "bgr")
           #log.info('next frame')  
-          frame = f.array
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-          gray = cv2.GaussianBlur(gray, (21, 21), 0)
+          blur = cv2.GaussianBlur(gray, (21, 21), 0)
           #cv2.imwrite('HI.jpg',gray, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
           # if the average frame is None, initialize it
           if avg is None:
                   #log.info("setup average frame")
-                  avg = gray.copy().astype("float")
+                  avg = blur.copy().astype("float")
                   raw_capture.truncate(0)
                   continue
           # accumulate the weighted average between the current frame and
           # previous frames, then compute the difference between the current
           # frame and running average
-          cv2.accumulateWeighted(gray, avg, 0.5)
-          frame_delta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+          cv2.accumulateWeighted(blur, avg, 0.5)
+          frame_delta = cv2.absdiff(blur, cv2.convertScaleAbs(avg))
           # threshold the delta image, dilate the thresholded image to fill
           # in holes, then find contours on thresholded image
           thresh = cv2.threshold(frame_delta, 5, 255, cv2.THRESH_BINARY)[1]
@@ -115,8 +115,6 @@ def scanMotionOpenCV(camera):
               filename = "img2" + str(picCount) + ".jpg"
               picCount = picCount + 1
               #log.info('create %s' % filename)
-              clr = takeStreamImage(camera, x, y, "bgr")
-              gray = cv2.cvtColor(clr, cv2.COLOR_BGR2GRAY)
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
               Q.put(filename)
               sleep(1)
