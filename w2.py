@@ -22,7 +22,14 @@ x = 320
 y = 240
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 
-
+def takeStreamImage(camera, width, height, fmt):
+    #log.info('take stream image %d, %d' % (x,y,))
+    with picamera.array.PiRGBArray(camera) as stream:
+        #log.info('cap %s' % fmt)
+        # bgr or rgb
+        camera.capture(stream, format=fmt)
+        return stream.array
+      
 def send(filename):
   statinfo = os.stat(filename)
   
@@ -107,7 +114,8 @@ def scanMotionOpenCV(camera):
               filename = "img" + str(picCount) + ".jpg"
               picCount = picCount + 1
               #log.info('create %s' % filename)
-              gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+              clr = takeStreamImage(camera, x, y, "bgr")
+              gray = cv2.cvtColor(clr, cv2.COLOR_BGR2GRAY)
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
               Q.put(filename)
               sleep(1)
