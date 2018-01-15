@@ -45,9 +45,10 @@ def send(filename):
             ser.write(byte)
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
-            if ((i % 16) == 0):
+            if ((i % 64) == 0):
               sleep(.30)
           sleep(1)
+  log.info('wait')      
   x = ser.read()  
   t1 = time.time()       
   log.info('%s sent, x = %s time is %d' % (filename, x, t1-t0))
