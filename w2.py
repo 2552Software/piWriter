@@ -77,7 +77,6 @@ def scanMotionOpenCV(camera):
     log.info('scan')  
     avg = None
     picCount = 0
-    raw_capture = PiRGBArray(camera, size=(x,y))
     Q = Queue()
     for i in range(1):
         worker = Thread(target=sender, args=(i, Q,))
@@ -85,7 +84,9 @@ def scanMotionOpenCV(camera):
         worker.start()
 #    log.info('start threads')
     while True:
-          frame = takeStreamImage(camera, x, y, "bgr")
+          frame = np.empty((x*y*3,), dtype=np.uint8)
+          camera.capture(frame, format='bgr')
+          frame = frame.reshape((y, x, 3))        
           #log.info('next frame')  
           # resize, grayscale & blur out noise
           gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -95,7 +96,6 @@ def scanMotionOpenCV(camera):
           if avg is None:
                   #log.info("setup average frame")
                   avg = blur.copy().astype("float")
-                  raw_capture.truncate(0)
                   continue
           # accumulate the weighted average between the current frame and
           # previous frames, then compute the difference between the current
