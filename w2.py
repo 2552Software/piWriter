@@ -30,8 +30,7 @@ def send(filename):
   t0 = time.time()
   with open(filename, 'rb') as f:
           log.info('file open')
-          #byte = f.read(1)
-          data = f.read()
+          byte = f.read(1)
           i = 0
           while byte:
             i = i + 1
