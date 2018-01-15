@@ -126,7 +126,7 @@ def scanMotionOpenCV(camera):
           
 # Start Main Program Logic
 if __name__ == '__main__':
-    try:
+    #try:
       log.info(ser.name)         # check which port was really used
      
       with picamera.PiCamera() as camera:
@@ -134,7 +134,7 @@ if __name__ == '__main__':
           camera.exposure_mode = 'sports'
           sleep(2)
           scanMotionOpenCV(camera)
-    except:
+    #except:
       log.info("Exiting FUMi")
 
 
