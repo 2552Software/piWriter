@@ -22,7 +22,7 @@ x = 320*2
 y = 240*2
 sleepTime = .1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 def sendBinary(filename):
-    BLOCKSIZE = 1024*2 #4x was no faster but it failed
+    BLOCKSIZE = 1024*3 #4x was no faster but it failed
     result = []
     current = ''
     statinfo = os.stat(filename)
@@ -37,7 +37,7 @@ def sendBinary(filename):
             break
         bytes = bytes + len(block)
         c = ser.write(block)
-        sleep(.15) #.25 is slow but steady, .15 is loses but just barley
+        sleep(.25) #.25 is slow but steady, .15 has messed up data
         log.info('send %d of %d' % (c, bytes))
     x = ser.read()  
     t1 = time.time()       
