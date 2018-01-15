@@ -21,7 +21,7 @@ ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=60 )  # open serial 
 
 x = 320
 y = 240
-sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
+sleepTime = .1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 def sendBinary(filename):
     BLOCKSIZE = 1024
     result = []
@@ -67,7 +67,7 @@ def send(filename):
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
             #if ((i % 64) == 0):
              # sleep(.30)
-          sleep(1)
+          #sleep(1)
   log.info('wait')      
   x = ser.read()  
   t1 = time.time()       
@@ -138,10 +138,9 @@ def scanMotionOpenCV(camera):
               #gray = gray.reshape((y, x, 3))            
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
               Q.put(filename)
-              sleep(1)
               break
           if (sleepTime) :
-              #log.info('nap %d seconds' % sleepTime)
+              log.info('nap %d seconds' % sleepTime)
               time.sleep(sleepTime)              
           
 # Start Main Program Logic
