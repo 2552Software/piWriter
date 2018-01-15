@@ -1,4 +1,3 @@
- 
 #!/usr/bin/python3
 #cv only motion cam
 import io 
@@ -17,7 +16,7 @@ from picamera.array import PiRGBArray
 import logging
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s %(message)s', level=logging.INFO)
 log = logging.getLogger('fumi')
-ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=60 )  # open serial port, timeout is in seconds
+ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=0.5 )  # open serial port, timeout is in seconds, 0.5 sec allows for failure
 
 x = 320*2
 y = 240*2
@@ -38,7 +37,7 @@ def sendBinary(filename):
             break
         bytes = bytes + len(block)
         c = ser.write(block)
-        sleep(.15) #.25 is slow but steady, .1 is ...
+        sleep(.15) #.25 is slow but steady, .15 is loses but just barley
         log.info('send %d of %d' % (c, bytes))
     x = ser.read()  
     t1 = time.time()       
