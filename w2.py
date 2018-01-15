@@ -110,6 +110,7 @@ def scanMotionOpenCV(camera):
               gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
               cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
               Q.put(filename)
+              sleep(1)
               break
           if (sleepTime) :
               #log.info('nap %d seconds' % sleepTime)
