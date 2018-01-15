@@ -81,7 +81,7 @@ def sender(i, q):
         filename = q.get()
         if (len(filename) > 0):
           log.info ('%s: sending' %  filename)
-          sendbinary(filename)
+          sendBinary(filename)
           q.task_done()
           sleep(0.1)
 
