@@ -23,7 +23,7 @@ x = 320*2
 y = 240*2
 sleepTime = .1  # time for camera to wait between pictures in seconds (can be .1 etc also)
 def sendBinary(filename):
-    BLOCKSIZE = 1024
+    BLOCKSIZE = 128
     result = []
     current = ''
     statinfo = os.stat(filename)
