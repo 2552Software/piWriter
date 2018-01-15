@@ -34,11 +34,11 @@ def sendBinary(filename):
       for block in iter(lambda: fp.read(BLOCKSIZE), ''):
         if (len(block) == 0):
             log.info('bye')
-            sleep(.15)
+            sleep(.25)
             break
         bytes = bytes + len(block)
         c = ser.write(block)
-        sleep(.15)
+        sleep(.25)
         log.info('send %d of %d' % (c, bytes))
     x = ser.read()  
     t1 = time.time()       
@@ -138,7 +138,7 @@ def scanMotionOpenCV(camera):
               picCount = picCount + 1
               #log.info('create %s' % filename)
               #gray = gray.reshape((y, x, 3))            
-              cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
+              cv2.imwrite(filename,gray, [int(cv2.IMWRITE_JPEG_QUALITY), 40])
               Q.put(filename)
               break
           if (sleepTime) :
