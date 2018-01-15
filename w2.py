@@ -41,7 +41,7 @@ def send(filename):
           i = 0
           while byte:
             i = i + 1
-            print('write %s' % byte)
+            #print('write %s' % byte)
             ser.write(byte)
             byte  = f.read(1)
             #is buffer really 16? hoping 64 is a good size since we are sending and reading from a file, not sure, time will tell
