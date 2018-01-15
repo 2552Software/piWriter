@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 #cv only motion cam
 import io 
@@ -21,6 +22,22 @@ ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=60 )  # open serial 
 x = 320
 y = 240
 sleepTime = 1  # time for camera to wait between pictures in seconds (can be .1 etc also)
+def sendBinary(filename):
+    BLOCKSIZE = 1024
+    result = []
+    current = ''
+    statinfo = os.stat(filename)
+    log.info('send %s, size %d' % (filename, statinfo.st_size))
+    bytes = 0
+    with open(filename, 'rb') as fp:
+      for block in iter(lambda: fp.read(BLOCKSIZE), ''):
+        if (len(block) == 0):
+            log.info('bye')
+            break
+        bytes = bytes + len(block)
+        c = ser.write(block)
+        log.info('send %d of %d' % (c, bytes))
+    x = ser.read()  
 
 def takeStreamImage(camera, width, height, fmt):
     #log.info('take stream image %d, %d' % (x,y,))
@@ -64,7 +81,7 @@ def sender(i, q):
         filename = q.get()
         if (len(filename) > 0):
           log.info ('%s: sending' %  filename)
-          send(filename)
+          sendbinary(filename)
           q.task_done()
           sleep(0.1)
 
