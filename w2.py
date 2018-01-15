@@ -16,7 +16,7 @@ from picamera.array import PiRGBArray
 import logging
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s %(message)s', level=logging.INFO)
 log = logging.getLogger('fumi')
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=60 )  # open serial port, timeout is in seconds
+ser = serial.Serial('/dev/ttyUSB0', baudrate=57600, timeout=60 )  # open serial port, timeout is in seconds
 
 x = 320
 y = 240
