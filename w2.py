@@ -111,7 +111,7 @@ def scanMotionOpenCV(camera):
               if cv2.contourArea(c) < 5000:
                   continue
               #log.info("Motion detected")
-              filename = "img" + str(picCount) + ".jpg"
+              filename = "img2" + str(picCount) + ".jpg"
               picCount = picCount + 1
               #log.info('create %s' % filename)
               clr = takeStreamImage(camera, x, y, "bgr")
